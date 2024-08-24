@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import axios from "axios";
-import { localities } from "@/lib/localities";
+import { fetchWeatherData } from "../actions";
 
 interface WeatherData {
   localityName: string;
@@ -24,47 +23,24 @@ export default function WeatherContent() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchWeather = async () => {
+    const getWeather = async () => {
       const localityId = searchParams.get("locality_id");
       if (localityId) {
         try {
           setIsLoading(true);
-          const response = await axios.get(
-            "https://www.weatherunion.com/gw/weather/external/v0/get_locality_weather_data",
-            {
-              params: { locality_id: localityId },
-              headers: {
-                "X-Zomato-Api-Key": process.env.NEXT_PUBLIC_ZOMATO_API_KEY,
-              },
-            }
-          );
-          console.log(response.data);
-          if (response.data.status == 200) {
-            const locality = localities.find(
-              (l) => l.localityId === localityId
-            );
-            if (locality) {
-              setWeatherData({
-                ...response.data.locality_weather_data,
-                localityName: locality.localityName,
-                cityName: locality.cityName,
-              });
-            } else {
-              setError("Locality information not found.");
-            }
-          } else {
-            setError("Failed to fetch weather data. Please try again.");
-          }
+          const data = await fetchWeatherData(localityId);
+          setWeatherData(data);
         } catch (error) {
-          console.error("Error fetching weather:", error);
-          setError("An error occurred while fetching weather data.");
+          setError(
+            error instanceof Error ? error.message : "An error occurred"
+          );
         } finally {
           setIsLoading(false);
         }
       }
     };
 
-    fetchWeather();
+    getWeather();
   }, [searchParams]);
 
   const formatValue = (value: number | null, unit: string): string => {
