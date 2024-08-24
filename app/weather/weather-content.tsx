@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { fetchWeatherData } from "../actions";
 
 interface WeatherData {
   localityName: string;
@@ -23,24 +22,29 @@ export default function WeatherContent() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const getWeather = async () => {
+    const fetchWeather = async () => {
       const localityId = searchParams.get("locality_id");
       if (localityId) {
         try {
           setIsLoading(true);
-          const data = await fetchWeatherData(localityId);
+          const response = await fetch(
+            `/api/weather?locality_id=${localityId}`
+          );
+          if (!response.ok) {
+            throw new Error("Failed to fetch weather data");
+          }
+          const data = await response.json();
           setWeatherData(data);
         } catch (error) {
-          setError(
-            error instanceof Error ? error.message : "An error occurred"
-          );
+          console.error("Error fetching weather:", error);
+          setError("An error occurred while fetching weather data.");
         } finally {
           setIsLoading(false);
         }
       }
     };
 
-    getWeather();
+    fetchWeather();
   }, [searchParams]);
 
   const formatValue = (value: number | null, unit: string): string => {
