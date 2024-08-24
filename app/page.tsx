@@ -67,7 +67,7 @@ export default function Home() {
             }}
             className="px-4 py-2 text-sm font-medium text-gray-800 bg-gray-100 border border-transparent rounded-md hover:border-gray-300"
           >
-            I'm Feeling Lucky
+            I&apos;m Feeling Lucky
           </button>
         </div>
       </div>
